@@ -1,0 +1,79 @@
+version: '3'
+
+services:
+
+  # railイメージを構築、railsコンテナを構築、起動
+  rails:
+    # railsフォルダの中にあるDockerfileをビルド
+    build: ./rails
+    container_name: rails
+    # サーバの起動フラッグを削除(起動されていると勘違いしてしまわないように)してからサーバ起動(Dockerfile内でも起動しているが)
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    # コンテナ中のappフォルダをローカルのappフォルダに結びつける（コンテナを起動する際にホストマシン上のデータがコンテナにマウントされる）
+    volumes:
+      - ./rails/app:/app
+    # コンテナのポートとホストのポートを対応付ける
+    ports:
+      - "8000:8000"
+    depends_on:
+    - postgres
+    - mysql
+    - redis
+    # attachに必要,ターミナルの入出力がコンテナのbashとつながる？,attachしないとブラウザは一生読み込み中に
+    stdin_open: true
+    # これがないとattachしてもすぐ切れてしまう？
+    tty: true
+  
+  node:
+    image: node:14.9.0-alpine3.10
+    # nodeフォルダの中にあるDockerfileをビルド
+    # build: ./node
+    container_name: node
+    volumes:
+      - ./node/app:/app
+    tty: true
+    ports:
+      - 3000:3000
+
+#  redis:
+#    image: redis
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      - ./data/redis:/data
+#    # 起動する必要ある？
+#    command: redis-server --appendonly yes
+
+#  postgresql:
+#    image: postgres
+#    volumes:
+#      - ./data/postgresql:/var/lib/postgresql/data
+#    environment:
+#      POSTGRES_USER:
+#      POSTGRES_`PASSWORD:
+#    ports:
+#      - "5432:5432"
+
+#  mysql:
+#    image: mysql
+#    volumes:
+#      - ./data/mysql:/var/lib/mysql
+#    environment:
+#      MYSQL_ROOT_PASSWORD:
+#      MYSQL_DATABASE:
+#    ports:
+#      - "3306:3306"
+
+  # neo4j:
+  #   image: neo4j
+  #   restart: unless-stopped
+  #   ports:
+  #     - 7474:7474
+  #     - 7687:7687
+  #   volumes:
+  #     - .data/neo4j/conf:/conf
+  #     - ./data/neo4j/data:/data
+  #     - ./data/neo4j/import:/import
+  #     - ./data/neo4j/logs:/logs
+  #     - ./data/neo4j/plugins:/plugins
+
