@@ -14,7 +14,7 @@ services:
       - ./rails/app:/app
     # コンテナのポートとホストのポートを対応付ける
     ports:
-      - "8000:8000"
+      - 8000:3000
     depends_on:
     - postgres
     - mysql
